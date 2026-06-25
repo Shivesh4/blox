@@ -20,7 +20,8 @@ import step1 from "@/assets/step-1.jpg";
 import step2 from "@/assets/step-2.jpg";
 import step3 from "@/assets/step-3.jpg";
 import darkImg from "@/assets/blox-dark.jpg";
-import bloxVideo from "@/assets/blox-tap-loop.mp4.asset.json";
+import bloxVideo from "@/assets/blox-tap-loop.mp4";
+
 
 const DISTRACTIONS = [
   { id: "instagram", label: "Instagram / Reels" },
@@ -72,14 +73,14 @@ function VideoShowcase() {
       <div className="mx-auto max-w-6xl">
         <div className="relative rounded-3xl overflow-hidden border border-border bg-ink shadow-xl aspect-[16/9]">
           <video
-            src={bloxVideo.url}
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="metadata"
-            className="w-full h-full object-cover"
-          />
+  src={bloxVideo}
+  autoPlay
+  loop
+  muted
+  playsInline
+  preload="metadata"
+  className="w-full h-full object-cover"
+/>
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/40 via-transparent to-transparent" />
           <div className="absolute bottom-5 left-5 sm:bottom-7 sm:left-7 max-w-sm">
             <div className="text-xs uppercase tracking-widest text-amber-glow mb-2">See it in action</div>
@@ -92,6 +93,7 @@ function VideoShowcase() {
     </section>
   );
 }
+
 
 function AnnouncementBar() {
   return (
