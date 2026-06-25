@@ -32,7 +32,6 @@ const DISTRACTIONS = [
   { id: "other", label: "Other" },
 ];
 
-const PRICES = ["Under ₹999", "₹999 – ₹1,499", "₹1,500 – ₹1,999", "Not sure yet"];
 
 const COUNTRY_CODES = [
   { code: "+91", label: "🇮🇳 +91" },
@@ -346,32 +345,84 @@ function WaitlistModal({ open, onClose }: { open: boolean; onClose: () => void }
   const [email, setEmail] = useState("");
   const [countryCode, setCountryCode] = useState("+91");
   const [phone, setPhone] = useState("");
-  const [distraction, setDistraction] = useState<string | null>(null);
-  const [price, setPrice] = useState<string | null>(null);
+ const [distractions, setDistractions] = useState<string[]>([]);
+
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
+  const toggleDistraction = (id:string) => {
+  setDistractions((prev) =>
+    prev.includes(id)
+      ? prev.filter((item) => item !== id)
+      : [...prev, id]
+  );
+};
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmedName = name.trim();
-    if (trimmedName.length < 2) return toast.error("Please enter your name.");
-    if (trimmedName.length > 80) return toast.error("Name is too long.");
-    if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) return toast.error("Please enter a valid email.");
-    if (email.length > 255) return toast.error("Email is too long.");
-    const digits = phone.replace(/\D/g, "");
-    if (digits.length < 6 || digits.length > 15) return toast.error("Please enter a valid phone number.");
+  e.preventDefault();
 
-    setSubmitting(true);
+
+  const trimmedName = name.trim();
+  const trimmedEmail = email.trim().toLowerCase();
+  const digits = phone.replace(/\D/g, "");
+
+
+  // Name validation
+  if (!trimmedName) {
+    return toast.error("Name is required.");
+  }
+
+  if (trimmedName.length < 2) {
+    return toast.error("Name must contain at least 2 characters.");
+  }
+
+  if (!/^[a-zA-Z\s.'-]+$/.test(trimmedName)) {
+    return toast.error("Enter a valid name.");
+  }
+
+
+  // Email validation
+  const emailRegex =
+    /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+
+  if (!trimmedEmail) {
+    return toast.error("Email is required.");
+  }
+
+  if (!emailRegex.test(trimmedEmail)) {
+    return toast.error("Enter a valid email address.");
+  }
+
+
+  // Phone validation
+  if (!digits) {
+    return toast.error("Phone number is required.");
+  }
+
+
+  if (!/^[0-9]{7,15}$/.test(digits)) {
+    return toast.error("Enter a valid phone number.");
+  }
+
+
+  // Distraction validation
+  if (distractions.length === 0) {
+    return toast.error(
+      "Select at least one distraction."
+    );
+  }
+
+
+  setSubmitting(true);
     try {
       const existing = JSON.parse(localStorage.getItem("blox_waitlist") || "[]");
       existing.push({
-        name: trimmedName,
-        email: email.trim().toLowerCase(),
-        phone: `${countryCode} ${digits}`,
-        distraction,
-        price,
-        ts: new Date().toISOString(),
-      });
+ name: trimmedName,
+ email: email.trim().toLowerCase(),
+ phone: `${countryCode} ${digits}`,
+ distraction: distractions,
+ createdAt: new Date().toISOString()
+});
       localStorage.setItem("blox_waitlist", JSON.stringify(existing));
       await new Promise((r) => setTimeout(r, 400));
       setSubmitted(true);
@@ -472,9 +523,9 @@ function WaitlistModal({ open, onClose }: { open: boolean; onClose: () => void }
                     <button
                       type="button"
                       key={d.id}
-                      onClick={() => setDistraction(d.id)}
+                      onClick={() => toggleDistraction(d.id)}
                       className={`text-sm rounded-full px-4 py-2 border transition ${
-                        distraction === d.id
+                        distractions.includes(d.id)
                           ? "bg-foreground text-background border-foreground"
                           : "bg-background border-border hover:border-foreground/40"
                       }`}
@@ -484,25 +535,7 @@ function WaitlistModal({ open, onClose }: { open: boolean; onClose: () => void }
                   ))}
                 </div>
               </div>
-              <div>
-                <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2">What would you pay for Blox?</div>
-                <div className="flex flex-wrap gap-2">
-                  {PRICES.map((p) => (
-                    <button
-                      type="button"
-                      key={p}
-                      onClick={() => setPrice(p)}
-                      className={`text-sm rounded-full px-4 py-2 border transition ${
-                        price === p
-                          ? "bg-foreground text-background border-foreground"
-                          : "bg-background border-border hover:border-foreground/40"
-                      }`}
-                    >
-                      {p}
-                    </button>
-                  ))}
-                </div>
-              </div>
+             
               <Button
                 type="submit"
                 disabled={submitting}
